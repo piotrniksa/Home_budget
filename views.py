@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from terminaltables import AsciiTable
 
 
 class AbstractView(ABC):
@@ -40,6 +41,14 @@ class ListCosts(AbstractView):
 
     def draw(self):
         print(ListCosts.LABEL)
+        rows = [
+            ['data dodania', 'kwota', 'kategoria']
+        ]
+        for _, created_at, amount, category in self.repositories['entry'].get_costs():
+            rows.append([created_at, amount, category])
+
+        table = AsciiTable(rows)
+        print(table.table)
 
 
 class AddIncome(AbstractView):
