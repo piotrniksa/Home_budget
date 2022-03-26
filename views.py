@@ -62,7 +62,6 @@ class AddIncome(AbstractView, AddView):
     SHORTCUT = 'dp'
     LABEL = 'Dodaj przychód'
 
-
     def draw(self):
         print(AddIncome.LABEL)
         name = input('Tytuł: ')
@@ -87,12 +86,31 @@ class ListIncomes(AbstractView):
         print(table.table)
 
 
+class Report(AbstractView):
+    SHORTCUT = 'r'
+    LABEL = 'Raporty'
+
+    def draw(self):
+        repository = self.repositories['report']
+
+        quantity, saldo = repository.get_saldo()
+        print(f'Ilość operacji: {quantity}')
+        print(f'Saldo: {saldo}')
+
+        rows = [['Nazwa', 'Ilość', 'Saldo']]
+        rows += [[category_name, quantity, saldo] for category_name, quantity, saldo in repository.get_by_category()]
+
+        table = AsciiTable(rows)
+        print(table.table)
+
+
 class MainMenu(AbstractView):
     OPTIONS = {
         AddCost.SHORTCUT: AddCost(),
         ListCosts.SHORTCUT: ListCosts(),
         AddIncome.SHORTCUT: AddIncome(),
-        ListIncomes.SHORTCUT: ListIncomes()
+        ListIncomes.SHORTCUT: ListIncomes(),
+        Report.SHORTCUT: Report()
     }
 
     def get_screen(self):
