@@ -14,7 +14,22 @@ class AbstractView(ABC):
         self.repositories[name] = repository
 
 
-class AddCost(AbstractView):
+class AddView:
+    def get_category_id(self, repository):
+        found_category = False
+
+        while not found_category:
+            try:
+                category_name = input('Kategoria: ')
+                category_id, _ = repository.get_by_name(category_name)
+                found_category = True
+            except TypeError:
+                found_category = False
+
+        return category_id
+
+
+class AddCost(AbstractView, AddView):
     SHORTCUT = 'dk'
     LABEL = 'Dodaj koszt'
 
@@ -22,15 +37,7 @@ class AddCost(AbstractView):
         print(AddCost.LABEL)
         name = input('Tytuł: ')
         amount = float(input('Wartość: '))
-        found_category = False
-
-        while not found_category:
-            try:
-                category_name = input('Kategoria: ')
-                category_id, _ = self.repositories['category'].get_by_name(category_name)
-                found_category = True
-            except TypeError:
-                found_category = False
+        category_id = self.get_category_id(self.repositories['category'])
 
         self.repositories['entry'].save(name, category_id, amount * -1)
 
@@ -42,21 +49,26 @@ class ListCosts(AbstractView):
     def draw(self):
         print(ListCosts.LABEL)
         rows = [
-            ['data dodania', 'kwota', 'kategoria']
+            ['tytuł', 'data dodania', 'kwota', 'kategoria']
         ]
-        for _, created_at, amount, category in self.repositories['entry'].get_costs():
-            rows.append([created_at, amount, category])
+        for _, name, created_at, amount, category in self.repositories['entry'].get_costs():
+            rows.append([name, created_at, amount, category])
 
         table = AsciiTable(rows)
         print(table.table)
 
 
-class AddIncome(AbstractView):
+class AddIncome(AbstractView, AddView):
     SHORTCUT = 'dp'
     LABEL = 'Dodaj przychód'
 
+
     def draw(self):
         print(AddIncome.LABEL)
+        name = input('Tytuł: ')
+        amount = float(input('Wartość: '))
+        category_id = self.get_category_id(self.repositories['category'])
+        self.repositories['entry'].save(name, category_id, amount)
 
 
 class ListIncomes(AbstractView):
@@ -65,6 +77,14 @@ class ListIncomes(AbstractView):
 
     def draw(self):
         print(ListIncomes.LABEL)
+        rows = [
+            ['tytuł', 'data dodania', 'kwota', 'kategoria']
+        ]
+        for _, name, created_at, amount, category in self.repositories['entry'].get_incomes():
+            rows.append([name, created_at, amount, category])
+
+        table = AsciiTable(rows)
+        print(table.table)
 
 
 class MainMenu(AbstractView):
